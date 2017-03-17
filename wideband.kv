@@ -1,0 +1,37 @@
+#:kivy 1.8.1
+
+<WidebandWidget>:
+  canvas:
+    Color:
+      hsv: self.h, 1, .8
+    Rectangle:
+      pos: 0, root.top - 200
+      size: root.width, 200
+
+  Label:
+    id: l1
+    font_size: 100
+    center_x: root.width / 2
+    # center_y: root.height / 2
+    top: root.top - 50
+    text: root.r
+
+  Slider:
+    id: s1
+    min: 8
+    max: 16
+    value: 14.7
+    step: .1
+
+  Graph:
+    id: graph
+    size: root.width, root.height - 204
+    ylabel: "AFR"
+    #title: "AFR"
+    ymin: 7.5
+    ymax: 16.5
+    xmin: 0
+    xmax: 10
+    y_ticks_major: 2
+    y_grid: True
+
