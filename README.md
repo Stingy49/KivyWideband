@@ -5,6 +5,6 @@ This application can be used to display your wideband oxygen sensor data in real
 
 Example pictures:
 
-![Alt text](/pics/Green.png?raw=true "Green")
+![Alt text](/pics/Green.PNG?raw=true "Green")
 
-![Alt text](/pics/Red.png?raw=true "Red")
+![Alt text](/pics/Red.PNG?raw=true "Red")
