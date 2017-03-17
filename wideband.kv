@@ -1,6 +1,8 @@
 #:kivy 1.8.1
 
 <WidebandWidget>:
+  
+  # Background for the text
   canvas:
     Color:
       hsv: self.h, 1, .8
@@ -8,6 +10,7 @@
       pos: 0, root.top - 200
       size: root.width, 200
 
+  # Sensor text
   Label:
     id: l1
     font_size: 100
