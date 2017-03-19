@@ -9,15 +9,25 @@ from kivy.properties import NumericProperty, StringProperty
 from kivy.clock import Clock
 from kivy.garden.graph import Graph, SmoothLinePlot
 from threading import Thread
+import smbus
 
 def i2cWorker():
   # I2C data gatherer
   # I figured I could use a seperate thread to gather my i2c data to prevent possible UI hangups
   # Obviously I haven't implemented this code yet
   print('Starting I2C Worker')
+
+  DEVICE_ADDRESS = 0x10
+  MEMORY_ADDRESS = 0x23
+
+  result = [0x00, 0x00]
+
   while True:
     #read that i2c data boiiiii
-    print('poop')
+    #result = bus.read_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
+    result[0] = bus.read_byte_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
+    result[1] = bus.read_byte_data(DEVICE_ADDRESS, MEMORY_ADDRESS+1)
+    print((result[0]<<8 | result[1])*.005)
 
 class WidebandWidget(Widget):
   # Kivy property types
@@ -30,6 +40,12 @@ class WidebandWidget(Widget):
   # Creating the array of tuples for kivy graph
   hist = zip(hist_t, hist_v)
 
+  bus = smbus.SMBus(1)
+  DEVICE_ADDRESS = 0x10
+  MEMORY_ADDRESS = 0x23
+  result = [0x00, 0x00]
+  afr = 0
+
   # For some reason the plot has to be initialized this way
   def __init__(self,):
     super(WidebandWidget, self).__init__()
@@ -38,14 +54,24 @@ class WidebandWidget(Widget):
 
 
   def update(self, dT):
+    try:
+      self.result[0] = self.bus.read_byte_data(self.DEVICE_ADDRESS, self.MEMORY_ADDRESS)
+      self.result[1] = self.bus.read_byte_data(self.DEVICE_ADDRESS, self.MEMORY_ADDRESS+1)
+    except:
+      self.result = [0x00, 0x00]
+    self.afr = (self.result[0]<<8 | self.result[1])*.005*14.7
+    print(self.afr)
+
     # This could be conviently centered around the ideal green value
     # and then some abs value bullshit could be used to make it go red in both directions
-    self.h = self.ids.s1.value * .0497 - .3976
-    self.r = str(self.ids.s1.value)
+    self.h = self.afr * .0497 - .3976
+    self.r = str(self.afr)
+
+    
 
     # Updating graph
     self.hist_v.pop(0)
-    self.hist_v.append(self.ids.s1.value)
+    self.hist_v.append(self.afr)
     self.hist = zip(self.hist_t, self.hist_v)
     self.p.points = self.hist
     

@@ -13,6 +13,8 @@ MEMORY_ADDRESS = 0x23
 
 result = [0x00, 0x00]
 
-result = bus.read_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
+#result = bus.read_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
+result[0] = bus.read_byte_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
+result[1] = bus.read_byte_data(DEVICE_ADDRESS, MEMORY_ADDRESS+1)
 print(result)
-print(result*.005)
+print((result[0]<<8 | result[1])*.005)
