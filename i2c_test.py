@@ -8,8 +8,11 @@ import smbus
 
 bus = smbus.SMBus(1)
 
-DEVICE_ADDRESS = 0x77
-COMMAND = 0xA0
+DEVICE_ADDRESS = 0x10
+MEMORY_ADDRESS = 0x23
 
-result = bus.read_byte_data(DEVICE_ADDRESS, COMMAND)
+result = [0x00, 0x00]
+
+result = bus.read_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
 print(result)
+print(result*.005)
