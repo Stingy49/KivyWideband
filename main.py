@@ -74,12 +74,12 @@ class WidebandWidget(Widget):
 
     # This could be conviently centered around the ideal green value
     # and then some abs value bullshit could be used to make it go red in both directions
-    self.h = self.afr * .0497 - .3976
-    self.r = str(self.afr)
+    self.h = afr * .0497 - .3976
+    self.r = str(afr)
 
     # Updating graph
     self.hist_v.pop(0)
-    self.hist_v.append(self.afr)
+    self.hist_v.append(afr)
     self.hist = zip(self.hist_t, self.hist_v)
     self.p.points = self.hist
     
