@@ -10,6 +10,7 @@ from kivy.clock import Clock
 from kivy.garden.graph import Graph, SmoothLinePlot
 from threading import Thread
 import smbus
+from time import sleep
 
 afr = 0
 
@@ -23,21 +24,28 @@ def i2cWorker():
   bus = smbus.SMBus(1)
   DEVICE_ADDRESS = 0x10
   MEMORY_ADDRESS = 0x23
-  result = [0x00, 0x00]
+  result = [0x00, 0x00, 0x00, 0x00]
 
   while True:
     #read that i2c data boiiiii
     #result = bus.read_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
     try:
-      result[0] = bus.read_byte_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
-      result[1] = bus.read_byte(DEVICE_ADDRESS)
+      result = bus.read_i2c_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS, 3)
+      #result[0] = bus.read_byte_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
+      #result[1] = bus.read_byte(DEVICE_ADDRESS)
     except:
-      result = [0x00, 0x00]
-    afr = (result[0]<<8 | result[1])*.005*14.7
+      pass
+    afr = float(result[0]<<8 | result[1])
+    #afr = float(result[0]<<24 | result[1]<<16 | result[2]<<8 | result[3])
+    #afr2 = float(result[3]<<24 | result[2]<<16 | result[1]<<8 | result[0])
+    afr = afr*14.7*.005
+    # print(result)
+    # print("Threaded AFR:")
+    # print(afr)
+    # print(afr2)
+    sleep(.016)
 
 class WidebandWidget(Widget):
-  # AFR Global variable
-  global afr
   # Kivy property types
   h = NumericProperty(0)
   r = StringProperty("14.7")
@@ -72,10 +80,13 @@ class WidebandWidget(Widget):
     # self.afr = (self.result[0]<<8 | self.result[1])*.005*14.7
     # print(self.afr)
 
+    # print("App AFR:")
+    # print(afr)
+
     # This could be conviently centered around the ideal green value
     # and then some abs value bullshit could be used to make it go red in both directions
     self.h = afr * .0497 - .3976
-    self.r = str(afr)
+    self.r = '{:.4}'.format(str(afr))
 
     # Updating graph
     self.hist_v.pop(0)
@@ -91,4 +102,7 @@ class WidebandApp(App):
     return widget
 
 if __name__ == '__main__':
+  i2c_thread = Thread(target = i2cWorker)
+  i2c_thread.daemon = True
+  i2c_thread.start()
   WidebandApp().run()
