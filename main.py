@@ -62,6 +62,8 @@ class WidebandWidget(Widget):
 
 
   def update(self, dT):
+    # AFR Global variable
+    global afr
     # try:
     #   self.result[0] = self.bus.read_byte_data(self.DEVICE_ADDRESS, self.MEMORY_ADDRESS)
     #   self.result[1] = self.bus.read_byte(self.DEVICE_ADDRESS)
