@@ -25,6 +25,7 @@ def i2cWorker():
   DEVICE_ADDRESS = 0x10
   MEMORY_ADDRESS = 0x23
   result = [0x00, 0x00, 0x00, 0x00]
+  afr_avg = [0, 0, 0, 0, 0, 0]
 
   while True:
     #read that i2c data boiiiii
@@ -39,6 +40,11 @@ def i2cWorker():
     #afr = float(result[0]<<24 | result[1]<<16 | result[2]<<8 | result[3])
     #afr2 = float(result[3]<<24 | result[2]<<16 | result[1]<<8 | result[0])
     afr = afr*14.7*.005
+    afr_avg.pop(0)
+    afr_avg.append(afr)
+    afr = 0
+    for x in range(0,len(afr_avg)):
+      afr += afr_avg[x]/len(afr_avg)
     # print(result)
     # print("Threaded AFR:")
     # print(afr)
