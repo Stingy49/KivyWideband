@@ -3,10 +3,11 @@
 # March 2017
 
 import argparse
-from smbus2 import SMBus
+from smbus import SMBus
+from struct import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("mode", help="Select the mode of the utility script. d: Data dump (defualt); h: Hardware calibration; f: Free air calibration", type=char)
+parser.add_argument("mode", help="Select the mode of the utility script. d: Data dump (defualt); h: Hardware calibration; f: Free air calibration")
 
 args = parser.parse_args()
 
@@ -14,11 +15,13 @@ bus = SMBus(1)
 DEVICE_ADDRESS = 0x10
 MEMORY_ADDRESS = 0x00
 
-try:
-  result = bus.read_i2c_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS, 38)
-  result_decode = unpack('>BBBffHHfffffHB', result)
-except:
-  pass
+# March 2017try:
+result = bus.read_i2c_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS, 38)
+# March 2017except:
+# March 2017  print("I2C Failed!!!")
+
+print(result)
+result_decode = unpack('>BBBffHHfffffHB', string(result))
 
 # dev_id = result[0]
 # Ia = float(result[7]<<24 | result[8]<<16 | result[9]<<8 | result[10])
@@ -30,7 +33,7 @@ except:
 # Linear_Output_Comp = float(result[27]<<24 | result[28]<<16 | result[29]<<8 | result[30])
 # FAC_Val = float(result[31]<<24 | result[32]<<16 | result[33]<<8 | result[34])
 
-if args.mode == ('h' || 'H'):
+if args.mode == ('h' or 'H'):
   print("Current cal values:\n")
   print("Offset_Comp: ")
   print(Offset_Comp + "\n")
@@ -63,7 +66,7 @@ if args.mode == ('h' || 'H'):
   print("FAC_Val: ")
   print(FAC_Val + "\n")
 
-elif args.mode == ('f' || 'F'):
+elif args.mode == ('f' or 'F'):
   print("Current cal values:\n")
   print("Offset_Comp: ")
   print(Offset_Comp + "\n")
@@ -97,6 +100,7 @@ elif args.mode == ('f' || 'F'):
   print(FAC_Val + "\n")
 
 else:
+  print(result_decode)
   print("Register Values: \n")
   print("Device ID: ")
   print(dev_id + "\n")
