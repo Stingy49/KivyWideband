@@ -1,7 +1,7 @@
-# KivyWideband
+# 14point7 I2C Wideband
 A Kivy gui for displaying wideband o2 sensor data in real time.
 
-This application can be used to display your wideband oxygen sensor data in real time. The graph consists of a 10 second history of the sensor data. Currently the small slider in the lower left hand corner is used to simulate the sensor input. The can be easily changed to utilize data from an a2d converter or an i2c interface. Also, the colored background behind the sensor text changes with the value of the reading.
+This application can be used to display your wideband oxygen sensor data in real time. The graph consists of a 10 second history of the sensor data. This code can be easily changed to utilize data from an a2d converter (to read the linear output). Also, the colored background behind the sensor text changes with the value of the reading.
 
 Example pictures:
 
