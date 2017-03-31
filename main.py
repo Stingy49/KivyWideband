@@ -49,6 +49,10 @@ def i2cWorker():
     # print("Threaded AFR:")
     # print(afr)
     # print(afr2)
+    if afr > 19:
+      afr = 19
+    elif afr < 10:
+      afr = 10
     sleep(.016)
 
 class WidebandWidget(Widget):

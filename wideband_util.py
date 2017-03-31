@@ -5,9 +5,10 @@
 import argparse
 from smbus import SMBus
 from struct import *
+import array
 
 parser = argparse.ArgumentParser()
-parser.add_argument("mode", help="Select the mode of the utility script. d: Data dump (defualt); h: Hardware calibration; f: Free air calibration")
+parser.add_argument("-mode", help="Select the mode of the utility script. d: Data dump (defualt); h: Hardware calibration; f: Free air calibration")
 
 args = parser.parse_args()
 
@@ -15,110 +16,57 @@ bus = SMBus(1)
 DEVICE_ADDRESS = 0x10
 MEMORY_ADDRESS = 0x00
 
-# March 2017try:
 result = bus.read_i2c_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS, 38)
-# March 2017except:
-# March 2017  print("I2C Failed!!!")
+result = array.array('B', result).tostring()
+result_decode = unpack('>BBBffHHfffffHB', result)
 
-print(result)
-result_decode = unpack('>BBBffHHfffffHB', string(result))
-
-# dev_id = result[0]
-# Ia = float(result[7]<<24 | result[8]<<16 | result[9]<<8 | result[10])
-# Ri_Max = result[11]<<8 | result[12]
-# Ri_Min = result[13]<<8 | result[14]
-# Offset_Comp = float(result[15]<<24 | result[16]<<16 | result[17]<<8 | result[18])
-# Gain_Error_Comp = float(result[19]<<24 | result[20]<<16 | result[21]<<8 | result[22])
-# Vref_Comp = float(result[23]<<24 | result[24]<<16 | result[25]<<8 | result[26])
-# Linear_Output_Comp = float(result[27]<<24 | result[28]<<16 | result[29]<<8 | result[30])
-# FAC_Val = float(result[31]<<24 | result[32]<<16 | result[33]<<8 | result[34])
+dev_id = result_decode[0]
+L32 = result_decode[3]
+Ia = result_decode[4]
+Ri_Max = result_decode[5]
+Ri_Min = result_decode[6]
+Offset_Comp = result_decode[7]
+Gain_Error_Comp = result_decode[8]
+Vref_Comp = result_decode[9]
+Linear_Output_Comp = result_decode[10]
+FAC_Val = result_decode[11]
+L16 = result_decode[12]
+L8 = result_decode[13]
+NermDelta = Ri_Max - Ri_Min
 
 if args.mode == ('h' or 'H'):
   print("Current cal values:\n")
-  print("Offset_Comp: ")
-  print(Offset_Comp + "\n")
-  print("Gain_Error_Comp: ")
-  print(Gain_Error_Comp + "\n")
-  print("Vref_Comp: ")
-  print(Vref_Comp + "\n")
-  print("Linear_Output_Comp: ")
-  print(Linear_Output_Comp + "\n")
-  print("FAC_Val: ")
-  print(FAC_Val + "\n")
-  print("Running hardware cal...\n")
+  print("Offset_Comp: {}".format(Offset_Comp))
+  print("Gain_Error_Comp: {}".format(Gain_Error_Comp))
+  print("Vref_Comp: {}".format(Vref_Comp))
+  print("Linear_Output_Comp: {}".format(Linear_Output_Comp))
+  print("FAC_Val: {}".format(FAC_Val))
+  print("\nRunning hardware cal...")
   bus.write_byte_data(DEVICE_ADDRESS, 0x01, 0x01)
-  
-  print("Updated cal values:\n")  
-  try:
-    result = bus.read_i2c_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS, 38)
-    result_decode = unpack('>BBBffHHfffffHB', result)
-  except:
-    pass
-
-  print("Offset_Comp: ")
-  print(Offset_Comp + "\n")
-  print("Gain_Error_Comp: ")
-  print(Gain_Error_Comp + "\n")
-  print("Vref_Comp: ")
-  print(Vref_Comp + "\n")
-  print("Linear_Output_Comp: ")
-  print(Linear_Output_Comp + "\n")
-  print("FAC_Val: ")
-  print(FAC_Val + "\n")
 
 elif args.mode == ('f' or 'F'):
-  print("Current cal values:\n")
-  print("Offset_Comp: ")
-  print(Offset_Comp + "\n")
-  print("Gain_Error_Comp: ")
-  print(Gain_Error_Comp + "\n")
-  print("Vref_Comp: ")
-  print(Vref_Comp + "\n")
-  print("Linear_Output_Comp: ")
-  print(Linear_Output_Comp + "\n")
-  print("FAC_Val: ")
-  print(FAC_Val + "\n")
-  print("Running free air cal...\n")
+  print("Current cal values:")
+  print("Offset_Comp: {}".format(Offset_Comp))
+  print("Gain_Error_Comp: {}".format(Gain_Error_Comp))
+  print("Vref_Comp: {}".format(Vref_Comp))
+  print("Linear_Output_Comp: {}".format(Linear_Output_Comp))
+  print("FAC_Val: {}".format(FAC_Val))
+  print("\nRunning free air cal...")
   bus.write_byte_data(DEVICE_ADDRESS, 0x02, 0x02)
 
-  print("Updated cal values:\n")  
-  try:
-    result = bus.read_i2c_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS, 38)
-    result_decode = unpack('>BBBffHHfffffHB', result)
-  except:
-    pass
-
-  print("Offset_Comp: ")
-  print(Offset_Comp + "\n")
-  print("Gain_Error_Comp: ")
-  print(Gain_Error_Comp + "\n")
-  print("Vref_Comp: ")
-  print(Vref_Comp + "\n")
-  print("Linear_Output_Comp: ")
-  print(Linear_Output_Comp + "\n")
-  print("FAC_Val: ")
-  print(FAC_Val + "\n")
-
 else:
-  print(result_decode)
-  print("Register Values: \n")
-  print("Device ID: ")
-  print(dev_id + "\n")
-  print("IA: ")
-  print(Ia + "\n")
-  print("Ri_Max: ")
-  print(Ri_Max + "\n")
-  print("Ri_Min: ")
-  print(Ri_Min + "\n")
-  print("Nermest R Delta: ")
-  print((Ri_Max - Ri_Min) + "\n")
-  print("Offset_Comp: ")
-  print(Offset_Comp + "\n")
-  print("Gain_Error_Comp: ")
-  print(Gain_Error_Comp + "\n")
-  print("Vref_Comp: ")
-  print(Vref_Comp + "\n")
-  print("Linear_Output_Comp: ")
-  print(Linear_Output_Comp + "\n")
-  print("FAC_Val: ")
-  print(FAC_Val + "\n")
+  print("Register Values:")
+  print("Device ID: {}".format(dev_id))
+  print("IA: {}".format(Ia))
+  print("Ri_Max: {}".format(Ri_Max))
+  print("Ri_Min: {}".format(Ri_Min))
+  print("Nermest R Delta: {}".format(NermDelta))
+  print("Offset_Comp: {}".format(Offset_Comp))
+  print("Gain_Error_Comp: {}".format(Gain_Error_Comp))
+  print("Vref_Comp: {}".format(Vref_Comp))
+  print("Linear_Output_Comp: {}".format(Linear_Output_Comp))
+  print("FAC_Val: {}".format(FAC_Val))
+  print("\nRaw Lambda Values:")
+  print("Lambda 32: {}".format(L32))
+  print("Lambda 16: {}".format(L16))
+  print("Lambda  8: {}".format(L8))
