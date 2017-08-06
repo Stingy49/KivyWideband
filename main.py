@@ -21,25 +21,36 @@ def i2cWorker():
   print('Starting I2C Worker')
 
   global afr
+  global tempc
+
+  # i2c variables
   bus = smbus.SMBus(1)
   DEVICE_ADDRESS = 0x10
+  
+  # lambda variables
   MEMORY_ADDRESS = 0x23
   result = [0x00, 0x00, 0x00, 0x00]
   afr_avg = [0, 0, 0, 0, 0, 0]
 
+  # tempc variables
+  TEMPC_ADDRESS = 0x0B
+  tempc_result = [0x00, 0x00, 0x00, 0x00, 0x00]
+
   while True:
     #read that i2c data boiiiii
     #result = bus.read_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
+
+    # Lambda Code
     try:
       result = bus.read_i2c_block_data(DEVICE_ADDRESS, MEMORY_ADDRESS, 3)
       #result[0] = bus.read_byte_data(DEVICE_ADDRESS, MEMORY_ADDRESS)
       #result[1] = bus.read_byte(DEVICE_ADDRESS)
     except:
-      pass
+      print('i2c read lambda error')
     afr = float(result[0]<<8 | result[1])
     #afr = float(result[0]<<24 | result[1]<<16 | result[2]<<8 | result[3])
     #afr2 = float(result[3]<<24 | result[2]<<16 | result[1]<<8 | result[0])
-    afr = afr*14.7*.005
+    afr = afr*.005
     afr_avg.pop(0)
     afr_avg.append(afr)
     afr = 0
@@ -49,20 +60,34 @@ def i2cWorker():
     # print("Threaded AFR:")
     # print(afr)
     # print(afr2)
-    if afr > 19:
-      afr = 19
-    elif afr < 10:
-      afr = 10
+    if afr > 1.32:
+      afr = 1.32
+    elif afr < .68:
+      afr = .68
+
+    # Tempc Code
+    try:
+      tempc_result = bus.read_i2c_block_data(DEVICE_ADDRESS, TEMPC_ADDRESS, 4)
+    except:
+      print('i2c read temp error')
+    rmax = float(tempc_result[0]<<8 | tempc_result[1])
+    rmin = float(tempc_result[2]<<8 | tempc_result[3])
+    print('RMAX: ' + rmax)
+    print('RMIN: ' + rmin)
+    tempc = rmax - rmin
+    print('DELTA: ' + tempc)
+
+
     sleep(.016)
 
 class WidebandWidget(Widget):
   # Kivy property types
   h = NumericProperty(0)
-  r = StringProperty("14.7")
+  r = StringProperty("1")
   # Generateing the two arrays for the graph (NOTE: This should be moved to the i2c thread when it exists)
   # Also whenever the refresh rate or data persistence length is changed, these initializations change
   hist_t = [(t/60.0) for t in range(0,601)]
-  hist_v = [(14.7) for v in range(0,601)]
+  hist_v = [(1) for v in range(0,601)]
   # Creating the array of tuples for kivy graph
   hist = zip(hist_t, hist_v)
 
@@ -95,8 +120,8 @@ class WidebandWidget(Widget):
 
     # This could be conviently centered around the ideal green value
     # and then some abs value bullshit could be used to make it go red in both directions
-    self.h = afr * .0497 - .3976
-    self.r = '{:.4}'.format(str(afr))
+    self.h = afr - .3976
+    self.r = '{:.4}'.format(str(tempc))
 
     # Updating graph
     self.hist_v.pop(0)
